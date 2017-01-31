@@ -48,8 +48,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 			}
 			System.out.println("Summary");
 			System.out.println("#############################");
-			System.out.println("Found " + received + " number of packets");
-			System.out.println("Out of " + totalMessages + " number of packets");
+			System.out.println("Found " + received + " packets");
+			System.out.println("Out of " + totalMessages + " packets sent");
 			double error_rate = (totalMessages - received)/totalMessages;
 			System.out.println("Giving an error rate of " + error_rate);
 			received = 0;
