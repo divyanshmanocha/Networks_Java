@@ -30,6 +30,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 		}
 
 		// TO-DO: Log receipt of the message
+		if (msg.messageNum > msg.totalMessages) {
+			return;
+		}
 		receivedMessages[msg.messageNum] = 1;
 
 
