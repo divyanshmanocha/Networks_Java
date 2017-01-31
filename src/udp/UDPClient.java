@@ -42,14 +42,22 @@ public class UDPClient {
 
 		try {
 			UDPClient client = new UDPClient();
+			client.testLoop(serverAddr, recvPort, countTo);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+
 	}
 
 	public UDPClient() {
 		// TO-DO: Initialise the UDP socket for sending data
-		sendSoc = new DatagramSocket();
+		try {
+			sendSoc = new DatagramSocket();
+		}
+		catch (SocketException e){
+			e.printStackTrace();
+		}
 	}
 
 	private void testLoop(InetAddress serverAddr, int recvPort, int countTo) {
@@ -58,7 +66,7 @@ public class UDPClient {
 
 		for (int n = 0; n < countTo; n++) {
 			MessageInfo packet = new MessageInfo(countTo, n);
-			send("1", serverAddr, recvPort);
+			send("1;0", serverAddr, recvPort);
 			//receivePacket = new DatagramPacket(pacData, pacData.length);
 			//clientSocket.receive(receivePacket);
 			//clientSocket.close();
@@ -74,6 +82,11 @@ public class UDPClient {
 		pktData = payload.getBytes();
 		// TO-DO: build the datagram packet and send it to the server
 		pkt = new DatagramPacket(pktData, pktData.length, destAddr, destPort);
-		sendSoc.send(pkt);
+		try {
+			sendSoc.send(pkt);
+		}
+		catch (IOException e){
+			e.printStackTrace();
+		}
 	}
 }
