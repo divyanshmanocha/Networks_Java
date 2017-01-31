@@ -66,7 +66,8 @@ public class UDPClient {
 
 		for (int n = 0; n < countTo; n++) {
 			MessageInfo packet = new MessageInfo(countTo, n);
-			send("1;0", serverAddr, recvPort);
+			String s = Integer.toString(countTo) + ";" + Integer.toString(n);
+			send(s, serverAddr, recvPort);
 			//receivePacket = new DatagramPacket(pacData, pacData.length);
 			//clientSocket.receive(receivePacket);
 			//clientSocket.close();

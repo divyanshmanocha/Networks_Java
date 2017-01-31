@@ -100,6 +100,7 @@ public class UDPServer {
 			System.out.println("Out of " + totalMessages + " packets sent");
 			double error_rate = (totalMessages - received)/totalMessages;
 			System.out.println("Giving an error rate of " + error_rate);
+			System.out.println("");
 			received = 0;
 			receivedMessages = null;
 			}
