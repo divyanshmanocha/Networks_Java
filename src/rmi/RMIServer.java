@@ -17,7 +17,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 
 	private int totalMessages = -1;
 	private int[] receivedMessages;
-	private int recieved = 0;
+	private int received = 0;
 
 	public RMIServer() throws RemoteException {
 	}
@@ -32,14 +32,14 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 		// TO-DO: Log receipt of the message
 		receivedMessages[msg.messageNum] = 1;
 
-	
+
 	// TO-DO: If this is the last expected message, then identify
 	//        any missing messages
-	
+
 		if (msg.messageNum == totalMessages - 1) {
 			for (int i = 0; i < totalMessages; i++) {
 				if (receivedMessages[i] == 1) {
-					recieved++;
+					received++;
 					System.out.println("Found packet: " + (i+1));
 				}
 				else {
@@ -48,11 +48,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 			}
 			System.out.println("Summary");
 			System.out.println("#############################");
-			System.out.println("Found " + recieved + " number of packets");
+			System.out.println("Found " + received + " number of packets");
 			System.out.println("Out of " + totalMessages + " number of packets");
-			double error_rate = (totalMessages - recieved)/totalMessages;
+			double error_rate = (totalMessages - received)/totalMessages;
 			System.out.println("Giving an error rate of " + error_rate);
-
+			received = 0;
+			receivedMessages = null;
 		}
 
 	}

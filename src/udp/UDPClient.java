@@ -40,7 +40,7 @@ public class UDPClient {
 
 		// TO-DO: Construct UDP client class and try to send messages
 		try (
-				Socket clieentSocket = new Socket(serverAddr, recvPort);
+				Socket clientSocket = new Socket(serverAddr, recvPort);
 		)
 	}
 
