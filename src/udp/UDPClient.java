@@ -39,19 +39,30 @@ public class UDPClient {
 
 
 		// TO-DO: Construct UDP client class and try to send messages
-		try (
-				Socket clientSocket = new Socket(serverAddr, recvPort);
-		)
+
+		try {
+			UDPClient client = new UDPClient();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public UDPClient() {
 		// TO-DO: Initialise the UDP socket for sending data
+		sendSoc = new DatagramSocket();
 	}
 
 	private void testLoop(InetAddress serverAddr, int recvPort, int countTo) {
 		int				tries = 0;
+		//byte[] pacData = new byte[256]
 
-		// TO-DO: Send the messages to the server
+		for (int n = 0; n < countTo; n++) {
+			MessageInfo packet = new MessageInfo(countTo, n);
+			send("1", serverAddr, recvPort);
+			//receivePacket = new DatagramPacket(pacData, pacData.length);
+			//clientSocket.receive(receivePacket);
+			//clientSocket.close();
+		}
 	}
 
 	private void send(String payload, InetAddress destAddr, int destPort) {
@@ -59,6 +70,10 @@ public class UDPClient {
 		byte[]				pktData;
 		DatagramPacket		pkt;
 
+		pktData = new byte[256];
+		pktData = payload.getBytes();
 		// TO-DO: build the datagram packet and send it to the server
+		pkt = new DatagramPacket(pktData, pktData.length, destAddr, destPort);
+		sendSoc.send(pkt);
 	}
 }
