@@ -97,7 +97,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 		}
 
 		try {
-			Naming.bind(serverURL, new RMIServer());
+			//Naming.bind(serverURL, new RMIServer());
+			Naming.bind(serverURL, server);
+			
 		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		} catch (RemoteException e) {
