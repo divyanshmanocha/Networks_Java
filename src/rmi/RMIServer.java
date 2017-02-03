@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
 import java.rmi.AlreadyBoundException;
+import java.io.*;
 
 import common.*;
 
@@ -18,6 +19,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 	private int totalMessages = -1;
 	private int[] receivedMessages;
 	private int received = 0;
+	private int trials = 5;
 
 	public RMIServer() throws RemoteException {
 	}
@@ -40,24 +42,48 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 	//        any missing messages
 
 		if (msg.messageNum == totalMessages - 1) {
-			for (int i = 0; i < totalMessages; i++) {
-				if (receivedMessages[i] == 1) {
-					received++;
-					System.out.println("Found packet: " + (i+1));
-				}
-				else {
-					System.out.println("Did not find packet: " + (i+1));
+			//The number of trials is set to 5 by default
+
+			for (int n = 0; n < trials; n++) {
+
+				for (int i = 0; i < totalMessages; i++) {
+					if (receivedMessages[i] == 1) {
+						received++;
+						System.out.println("Found packet: " + (i+1));
+					}
+					else {
+						System.out.println("Did not find packet: " + (i+1));
+					}
 				}
 			}
-			System.out.println("Summary");
+
+			received = received/trials;
+
+			System.out.println("Summary (Average)");
 			System.out.println("#############################");
 			System.out.println("Found " + received + " packets");
 			System.out.println("Out of " + totalMessages + " packets sent");
 			double error_rate = ((double)(totalMessages - received))/((double)totalMessages);
 			System.out.println("Success rate: " + (1.0-error_rate));
 			System.out.println("Error rate: " + error_rate);
+
+
+			System.out.println("Writing to file");
+			System.out.println("#############################");
+
+			FileOutputStream out = null;
+
+			try{
+			    PrintWriter writer = new PrintWriter(new FileOutputStream(new File("error_rate.txt"), true /* append = true */) );
+			    writer.append(totalMessages + "\t" + error_rate + "\n");
+			    writer.close();
+			} catch (IOException e) {
+			   System.out.println("Error: Failed to output to file");
+			}
+
 			received = 0;
 			receivedMessages = null;
+
 		}
 
 	}

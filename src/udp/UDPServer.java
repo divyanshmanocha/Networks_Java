@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
+import java.io.*;
 
 import common.MessageInfo;
 
@@ -20,6 +21,7 @@ public class UDPServer {
 	private int[] receivedMessages = null;
 	private boolean close;
 	private int received = 0;
+	private int trials = 5;
 
 	private void run() {
 		int				pacSize;
@@ -85,23 +87,41 @@ public class UDPServer {
 		if (msg.messageNum() == totalMessages-1) {
 			// Check for any missing messages
 
-			for (int i = 0; i < totalMessages; i++){
-				if (receivedMessages[i]==1) {
-					received++;
-					System.out.println("Found packet: " + (i+1));
-				}
-				else {
-					System.out.println("Did not find packet: " + (i+1));
+			for (int n = 0; n < trials; n++) {
+				for (int i = 0; i < totalMessages; i++){
+					if (receivedMessages[i]==1) {
+						received++;
+						System.out.println("Found packet: " + (i+1));
+					}
+					else {
+						System.out.println("Did not find packet: " + (i+1));
+					}
 				}
 			}
-			System.out.println("Summary");
+			received = received/trials;
+
+			System.out.println("Summary (Average)");
 			System.out.println("#############################");
 			System.out.println("Found " + received + " packets");
 			System.out.println("Out of " + totalMessages + " packets sent");
 			double error_rate = ((double)(totalMessages - received))/((double)totalMessages);
 			System.out.println("Success rate: " + (1.0-error_rate));
 			System.out.println("Error rate: " + error_rate);
-			System.out.println("");
+
+
+			System.out.println("Writing to file");
+			System.out.println("#############################");
+
+			FileOutputStream out = null;
+
+			try{
+			    PrintWriter writer = new PrintWriter(new FileOutputStream(new File("error_rate.txt"), true /* append = true */) );
+			    writer.append(totalMessages + "\t" + error_rate + "\n");
+			    writer.close();
+			} catch (IOException e) {
+			   System.out.println("Error: Failed to output to file");
+			}
+
 			received = 0;
 			receivedMessages = null;
 			}
