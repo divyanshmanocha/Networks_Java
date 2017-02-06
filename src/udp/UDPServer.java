@@ -95,8 +95,7 @@ public class UDPServer {
 					System.out.println("Did not find packet: " + (i+1));
 				}
 			}
-
-			System.out.println("Summary (Average)");
+			
 			System.out.println("#############################");
 			System.out.println("Found " + received + " packets");
 			System.out.println("Out of " + totalMessages + " packets sent");
