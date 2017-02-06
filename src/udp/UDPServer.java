@@ -21,7 +21,6 @@ public class UDPServer {
 	private int[] receivedMessages = null;
 	private boolean close;
 	private int received = 0;
-	private int trials = 5;
 
 	private void run() {
 		int				pacSize;
@@ -87,18 +86,15 @@ public class UDPServer {
 		if (msg.messageNum() == totalMessages-1) {
 			// Check for any missing messages
 
-			for (int n = 0; n < trials; n++) {
-				for (int i = 0; i < totalMessages; i++){
-					if (receivedMessages[i]==1) {
-						received++;
-						System.out.println("Found packet: " + (i+1));
-					}
-					else {
-						System.out.println("Did not find packet: " + (i+1));
-					}
+			for (int i = 0; i < totalMessages; i++){
+				if (receivedMessages[i]==1) {
+					received++;
+					System.out.println("Found packet: " + (i+1));
+				}
+				else {
+					System.out.println("Did not find packet: " + (i+1));
 				}
 			}
-			received = received/trials;
 
 			System.out.println("Summary (Average)");
 			System.out.println("#############################");
@@ -116,7 +112,7 @@ public class UDPServer {
 
 			try{
 			    PrintWriter writer = new PrintWriter(new FileOutputStream(new File("error_rate.txt"), true /* append = true */) );
-			    writer.append(totalMessages + "\t" + error_rate + "\n");
+			    writer.append(totalMessages + "\t" + received + "\t" + error_rate  + "\n");
 			    writer.close();
 			} catch (IOException e) {
 			   System.out.println("Error: Failed to output to file");
