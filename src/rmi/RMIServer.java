@@ -19,7 +19,6 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 	private int totalMessages = -1;
 	private int[] receivedMessages;
 	private int received = 0;
-	private int trials = 5;
 
 	public RMIServer() throws RemoteException {
 	}
@@ -36,30 +35,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 			return;
 		}
 		receivedMessages[msg.messageNum] = 1;
-
-
+		received++;
 	// TO-DO: If this is the last expected message, then identify
 	//        any missing messages
 
 		if (msg.messageNum == totalMessages - 1) {
 			//The number of trials is set to 5 by default
-
-			for (int n = 0; n < trials; n++) {
-
-				for (int i = 0; i < totalMessages; i++) {
-					if (receivedMessages[i] == 1) {
-						received++;
-						System.out.println("Found packet: " + (i+1));
-					}
-					else {
-						System.out.println("Did not find packet: " + (i+1));
-					}
-				}
-			}
-
-			received = received/trials;
-
-			System.out.println("Summary (Average)");
 			System.out.println("#############################");
 			System.out.println("Found " + received + " packets");
 			System.out.println("Out of " + totalMessages + " packets sent");
@@ -74,7 +55,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 			FileOutputStream out = null;
 
 			try{
-			    PrintWriter writer = new PrintWriter(new FileOutputStream(new File("error_rate.txt"), true /* append = true */) );
+			    PrintWriter writer = new PrintWriter(new FileOutputStream(new File("error_rate_rmi.txt"), true /* append = true */) );
 			    writer.append(totalMessages + "\t" + error_rate + "\n");
 			    writer.close();
 			} catch (IOException e) {
@@ -125,7 +106,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerI {
 		try {
 			//Naming.bind(serverURL, new RMIServer());
 			Naming.bind(serverURL, server);
-			
+
 		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		} catch (RemoteException e) {
