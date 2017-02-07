@@ -18,7 +18,7 @@ udp:
 	cd common; \
 	javac -g -classpath . *.java; \
 	cd ../udp; \
-	javac -g -classpath .:.. *.java; \
+	javac -Xlint:unchecked -g -classpath .:.. *.java; \
 
 
 .PHONY : clean
