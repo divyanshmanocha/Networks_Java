@@ -23,69 +23,77 @@ public class UDPServer {
 	private ArrayList<Integer> receivedMessages = new ArrayList<Integer>();
 	private boolean close;
 	private int received = 0;
-	private long start_time = 0;
 	private void run() {
 		int				pacSize;
 		byte[]			pacData;
 		DatagramPacket 	pac;
-    start_time = System.currentTimeMillis();
 		// TO-DO: Receive the messages and process them by calling processMessage(...).
 		//        Use a timeout (e.g. 30 secs) to ensure the program doesn't block forever
+
+
 		try {
+			recvSoc.setSoTimeout(3000);
 			// Until we get to the final message
 			while (true) {
 				// Initialise pacData and pacSize
 				pacData = new byte[256];
 				pacSize = pacData.length;
-
 				// Receive request
 				pac = new DatagramPacket(pacData, pacSize);
-				recvSoc.receive(pac);
-				String recStr= new String(pac.getData(), 0, pac.getLength());
-				// Process message
-        processMessage(recStr, pac);
-        // print stats
-        long curr_time = System.currentTimeMillis();
-        if (msgNum == totalMessages-1 || received==totalMessages || (curr_time > (start_time + 5*1000))){
-          if (received!=totalMessages){
-				  System.out.println("Lost some packets: ");
-				    for (int i = 0; i < totalMessages; i++){
-				  	  if (!receivedMessages.contains(i)){
-				  		  System.out.println("Lost packet: " + i);
-			  		  }
-			  	 }
-			    } 	
-			    receivedMessages.clear();
-			    System.out.println("#############################");
-			    System.out.println("Found " + received + " packets");
-			    System.out.println("Out of " + totalMessages + " packets sent");
-			    double error_rate = ((double)(totalMessages - received))/((double)totalMessages);
-			    System.out.println("Success rate: " + (1.0-error_rate));
-			    System.out.println("Error rate: " + error_rate);
-
-
-			    System.out.println("Writing to file");
-			    System.out.println("#############################");
-
-			    FileOutputStream out = null;
-
-			    try{
-			      PrintWriter writer = new PrintWriter(new FileOutputStream(new File("error_rate.txt"), true /* append = true */) );
-			      writer.append(totalMessages + "\t" + received + "\t" + error_rate  + "\n");
-			      writer.close();
-			    } catch (IOException e) {
-			      System.out.println("Error: Failed to output to file");
-			    }
-          received = 0;
-			    start_time = System.currentTimeMillis();
-			    totalMessages = -1;
-				    	
-			  }
+				try {
+					recvSoc.receive(pac);
+					String recStr= new String(pac.getData(), 0, pac.getLength());
+					// Process message
+	        processMessage(recStr, pac);
+	        // print stats
+	        if (msgNum == totalMessages-1 || received==totalMessages){
+						printStats();
+					}
+				}
+				catch (SocketTimeoutException e) {
+					if (totalMessages!=-1)
+						printStats();
+				}
 			}
 		}
 		catch (IOException e) {
       e.printStackTrace();
 		}
+	}
+
+	public void printStats(){
+		System.out.println("#############################");
+		/*if (received!=totalMessages){
+		System.out.println("Lost some packets: ");
+			for (int i = 0; i < totalMessages; i++){
+				if (!receivedMessages.contains(i)){
+					System.out.println("Lost packet: " + i);
+				}
+		 }
+	 }*/
+		receivedMessages.clear();
+
+		System.out.println("Found " + received + " packets");
+		System.out.println("Out of " + totalMessages + " packets sent");
+		double error_rate = ((double)(totalMessages - received))/((double)totalMessages);
+		System.out.println("Success rate: " + (1.0-error_rate));
+		System.out.println("Error rate: " + error_rate);
+
+
+		System.out.println("Writing to file");
+		System.out.println("#############################");
+
+		FileOutputStream out = null;
+
+		try{
+			PrintWriter writer = new PrintWriter(new FileOutputStream(new File("error_rate.txt"), true /* append = true */) );
+			writer.append(totalMessages + "\t" + received + "\t" + error_rate  + "\n");
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Error: Failed to output to file");
+		}
+		received = 0;
+		totalMessages = -1;
 	}
 
 	public void processMessage(String data, DatagramPacket pac) {
@@ -98,45 +106,26 @@ public class UDPServer {
 			e.printStackTrace();
 		}
 		// On receipt of first message, initialise the receive buffer
-			
+
 		msgNum = msg.messageNum();
-		System.out.println("Found packet:" + msgNum);
+		// System.out.println("Found packet:" + msgNum);
 		totalMessages = msg.totalMessages();
 		// Log receipt of the message
 		if (totalMessages > receivedMessages.size()){
 			receivedMessages.ensureCapacity(totalMessages);
 		}
-		
+
 		if (msgNum < totalMessages && !receivedMessages.contains(msgNum) && received < totalMessages && msgNum!=totalMessages-1) {
 			receivedMessages.add(msgNum);
 			received++;
 		}
-		
-		else if (msgNum==totalMessages-1) {	
+
+		else if (msgNum==totalMessages-1) {
 			// add the final message
 			receivedMessages.add(msgNum);
 			received++;
 		}
-
-		// Send reply
-		/*
-		try {
-			byte[] buf = new byte[256];
-			String dstring = "Received packet: " + 	Integer.toString(msg.messageNum());
-			InetAddress address = pac.getAddress();
-			int port = pac.getPort();
-			pac = new DatagramPacket(buf, buf.length, address, port);
-			recvSoc.send(pac);
-		}	
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		*/
-		// TO-DO: If this is the last expected message, then identify
-		//        any missing messages
-		
-		
-		}
+	}
 
 	public UDPServer(int rp) {
 		// TO-DO: Initialise UDP socket for receiving data
