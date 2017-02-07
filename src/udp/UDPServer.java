@@ -9,7 +9,8 @@ import java.net.DatagramSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
+import java.net.InetAddress;
+import java.util.*;
 import java.io.*;
 
 import common.MessageInfo;
@@ -18,7 +19,8 @@ public class UDPServer {
 
 	private DatagramSocket recvSoc;
 	private int totalMessages = -1;
-	private int[] receivedMessages = null;
+	private int msgNum = -1;
+	private ArrayList<Integer> receivedMessages = new ArrayList<Integer>();
 	private boolean close;
 	private int received = 0;
 
@@ -53,49 +55,44 @@ public class UDPServer {
 	}
 
 	public void processMessage(String data, DatagramPacket pac) {
-
 		MessageInfo msg = null;
-		// TO-DO: Use the data to construct a new MessageInfo object
+		// Use the data to construct a new MessageInfo object
 		try {
 			msg = new MessageInfo(data);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		// TO-DO: On receipt of first message, initialise the receive buffer
-		totalMessages = msg.totalMessages();
-		if (receivedMessages == null && totalMessages != -1){
-			receivedMessages = new int[totalMessages];
-		}
-
-		// TO-DO: Log receipt of the message
-		receivedMessages[msg.messageNum()] = 1;
-
-
-		// Send reply
-		/*
-		byte[] buf = new byte[256];
-		String dstring = (msg.messageNum()+1).toString();
-		InetAddress address = pac.getAddress();
-		int port = pac.getPort();
-		pac = new DatagramPacket(buf, buf.length, address, port);
-		recvSoc.send(pac);
-		*/
-		// TO-DO: If this is the last expected message, then identify
-		//        any missing messages
-		if (msg.messageNum() == totalMessages-1) {
-			// Check for any missing messages
-
-			for (int i = 0; i < totalMessages; i++){
-				if (receivedMessages[i]==1) {
-					received++;
-					System.out.println("Found packet: " + (i+1));
-				}
-				else {
-					System.out.println("Did not find packet: " + (i+1));
-				}
-			}
+		// On receipt of first message, initialise the receive buffer
 			
+		msgNum = msg.messageNum();
+		//System.out.println("Found packet:" + msgNum);
+		totalMessages = msg.totalMessages();
+		// Log receipt of the message
+		if (totalMessages > receivedMessages.size()){
+			receivedMessages.ensureCapacity(totalMessages);
+		}
+		
+		if (msgNum < totalMessages && !receivedMessages.contains(msgNum) && received < totalMessages && msgNum!=totalMessages-1) {
+			receivedMessages.add(msgNum);
+			received++;
+		}
+		
+		else {	
+			// add the final message
+			if (msgNum==totalMessages-1){
+				receivedMessages.add(msgNum);
+				received++;
+			}
+			if (received!=totalMessages){
+				System.out.println("Lost some packets: ");
+				for (int i = 0; i < totalMessages; i++){
+					if (!receivedMessages.contains(i)){
+						System.out.println("Lost packet: " + i);
+					}
+				}
+			}	
+			receivedMessages.clear();
 			System.out.println("#############################");
 			System.out.println("Found " + received + " packets");
 			System.out.println("Out of " + totalMessages + " packets sent");
@@ -118,8 +115,26 @@ public class UDPServer {
 			}
 
 			received = 0;
-			receivedMessages = null;
-			}
+		}
+
+		// Send reply
+		/*
+		try {
+			byte[] buf = new byte[256];
+			String dstring = "Received packet: " + 	Integer.toString(msg.messageNum());
+			InetAddress address = pac.getAddress();
+			int port = pac.getPort();
+			pac = new DatagramPacket(buf, buf.length, address, port);
+			recvSoc.send(pac);
+		}	
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		*/
+		// TO-DO: If this is the last expected message, then identify
+		//        any missing messages
+		
+		
 		}
 
 	public UDPServer(int rp) {
